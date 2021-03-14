@@ -5,7 +5,7 @@
  *
  * font: see http://freedesktop.org/software/fontconfig/fontconfig-user.html
  */
-static char *font = "Liberation Mono";
+static char *font = "UbuntuMonoLigaturized";
 static int font_size = 12;
 
 static int borderpx = 2;

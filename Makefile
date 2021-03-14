@@ -4,10 +4,15 @@
 
 include config.mk
 
-SRC = st.c x.c
-OBJ = $(SRC:.c=.o)
+SRC = st.c x.c vk.c
+OBJ = shader.o $(SRC:.c=.o)
+GLSLC = glslc
 
-all: options st
+all: options shader st
+
+shader:
+	`$(GLSLC) -fshader-stage=vert -DVERTEX_SHADER prog.glsl -o vs.spv && \
+	 $(GLSLC) -fshader-stage=frag -DFRAGMENT_SHADER prog.glsl -o fs.spv`
 
 options:
 	@echo st build options:
@@ -24,13 +29,16 @@ config.h:
 st.o: config.h st.h win.h
 x.o: arg.h config.h st.h win.h
 
+shader.o:
+	$(CC) -c shader.S -o shader.o
+
 $(OBJ): config.h config.mk
 
 st: $(OBJ)
 	$(CC) -o $@ $(OBJ) $(STLDFLAGS)
 
 clean:
-	rm -f st $(OBJ) st-$(VERSION).tar.gz
+	rm -f st $(OBJ) st-$(VERSION).tar.gz vs.spv fs.spv
 
 dist: clean
 	mkdir -p st-$(VERSION)

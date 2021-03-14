@@ -75,38 +75,38 @@ enum charset {
 };
 
 enum escape_state {
-	ESC_START      = 1,
-	ESC_CSI        = 2,
-	ESC_STR        = 4,  /* DCS, OSC, PM, APC */
-	ESC_ALTCHARSET = 8,
-	ESC_STR_END    = 16, /* a final string was encountered */
-	ESC_TEST       = 32, /* Enter in test mode */
-	ESC_UTF8       = 64,
+        ESC_START      = 1,
+        ESC_CSI        = 2,
+        ESC_STR        = 4,  /* DCS, OSC, PM, APC */
+        ESC_ALTCHARSET = 8,
+        ESC_STR_END    = 16, /* a final string was encountered */
+        ESC_TEST       = 32, /* Enter in test mode */
+        ESC_UTF8       = 64,
 };
 
 typedef struct {
-	Glyph attr; /* current char attributes */
-	int x;
-	int y;
-	char state;
+        Glyph attr; /* current char attributes */
+        int x;
+        int y;
+        char state;
 } TCursor;
 
 typedef struct {
-	int mode;
-	int type;
-	int snap;
-	/*
+        int mode;
+        int type;
+        int snap;
+        /*
 	 * Selection variables:
 	 * nb – normalized coordinates of the beginning of the selection
 	 * ne – normalized coordinates of the end of the selection
 	 * ob – original coordinates of the beginning of the selection
 	 * oe – original coordinates of the end of the selection
 	 */
-	struct {
-		int x, y;
-	} nb, ne, ob, oe;
+        struct {
+	        int x, y;
+        } nb, ne, ob, oe;
 
-	int alt;
+        int alt;
 } Selection;
 
 /* Internal representation of the screen */
@@ -2590,9 +2590,12 @@ draw(void)
 	drawregion(0, 0, term.col, term.row);
 	xdrawcursor(cx, term.c.y, term.line[term.c.y][cx],
 			term.ocx, term.ocy, term.line[term.ocy][term.ocx]);
+
 	term.ocx = cx;
 	term.ocy = term.c.y;
+
 	xfinishdraw();
+
 	if (ocx != term.ocx || ocy != term.ocy)
 		xximspot(term.ocx, term.ocy);
 }

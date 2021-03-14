@@ -1,12 +1,15 @@
-st - simple terminal
+stvk - simple terminal (vulkan fork)
 --------------------
-st is a simple terminal emulator for X which sucks less.
+A vulkan fork of https://git.suckless.org/st/
 
+DISCLAIMER
+----------
+This project is in development and highly subject to change.
 
 Requirements
 ------------
-In order to build st you need the Xlib header files.
-
+In order to build st you need the Xlib header files,
+vulkan drivers + headers, and glslc.
 
 Installation
 ------------
@@ -27,6 +30,14 @@ the st terminfo entry with the following command:
     tic -sx st.info
 
 See the man page for additional details.
+
+TODO
+----
+
+- Fallback font mechanism.
+- Swapchain/render target resize mechanism needs to be revised and built robust.
+- Resizeabe glyph atlas and SSBO.
+- Most likely plenty bugfixes.
 
 Credits
 -------
