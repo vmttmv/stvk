@@ -36,7 +36,7 @@ TODO
 
 - Fallback font mechanism.
 - Swapchain/render target resize mechanism needs to be revised and built robust.
-- Resizeabe glyph atlas and SSBO.
+- Resizeable glyph atlas and SSBO.
 - Zoom
 - Most likely plenty bugfixes.
 
