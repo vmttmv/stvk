@@ -38,6 +38,7 @@ TODO
 - Swapchain/render target resize mechanism needs to be revised and built robust.
 - Resizeable glyph atlas and SSBO.
 - Zoom
+- Possibly use the explicit vk cleanup func (requires changes to st's exits...)
 - Most likely plenty bugfixes.
 
 Credits
