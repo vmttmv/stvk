@@ -9,7 +9,7 @@ This project is in development and highly subject to change.
 Requirements
 ------------
 In order to build st you need the Xlib header files,
-vulkan drivers + headers, and glslc.
+vulkan drivers + headers, and glslang.
 
 Installation
 ------------

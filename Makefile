@@ -6,13 +6,13 @@ include config.mk
 
 SRC = st.c x.c vk.c
 OBJ = shader.o $(SRC:.c=.o)
-GLSLC = glslc
+GLSLCC = glslangValidator
 
 all: options shader st
 
 shader:
-	`$(GLSLC) -fshader-stage=vert -DVERTEX_SHADER prog.glsl -o vs.spv && \
-	 $(GLSLC) -fshader-stage=frag -DFRAGMENT_SHADER prog.glsl -o fs.spv`
+	`$(GLSLCC) -V -S vert -DVERTEX_SHADER -o vs.spv prog.glsl &>/dev/null && \
+	 $(GLSLCC) -V -S frag -DFRAGMENT_SHADER -o fs.spv prog.glsl &>/dev/null`
 
 options:
 	@echo st build options:

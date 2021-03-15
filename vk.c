@@ -427,7 +427,7 @@ initpipe(VKPIPE *pipe)
 
         VkPipelineInputAssemblyStateCreateInfo inputassy = {0};
         inputassy.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-        inputassy.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        inputassy.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
 
         VkPipelineRasterizationStateCreateInfo rasterizer = {0};
         rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -648,9 +648,9 @@ initimg(VKIMG *img, uint32_t w, uint32_t h, VkFormat fmt)
         samplerinfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
         samplerinfo.magFilter = VK_FILTER_LINEAR;
         samplerinfo.minFilter = VK_FILTER_LINEAR;
-        samplerinfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-        samplerinfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-        samplerinfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        samplerinfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+        samplerinfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+        samplerinfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
         if (vkCreateSampler(ctx.dev, &samplerinfo, NULL, &img->sampler) != VK_SUCCESS) {
                 fprintf(stderr, "FATAL: vkCreateSampler()\n");
                 vkDestroyImageView(ctx.dev, img->view, NULL);
@@ -1150,7 +1150,7 @@ vkflush(void)
                 pc.tw = pc.th = ATLASSIZ;
                 vkCmdPushConstants(ctx.cmdbuf, ctx.pipeline.layout, VK_SHADER_STAGE_VERTEX_BIT, 0,
                                    sizeof pc, &pc);
-                vkCmdDraw(ctx.cmdbuf, nquad*6, 1, 0, 0);
+                vkCmdDraw(ctx.cmdbuf, 4, nquad, 0, 0);
                 vkCmdEndRenderPass(ctx.cmdbuf);
         }
 
