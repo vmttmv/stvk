@@ -1,0 +1,112 @@
+#ifndef EXPORTED_VK_FUNC
+#define EXPORTED_VK_FUNC(name)
+#endif
+
+EXPORTED_VK_FUNC(vkGetInstanceProcAddr)
+#undef EXPORTED_VK_FUNC
+
+#ifndef GLOBAL_VK_FUNC
+#define GLOBAL_VK_FUNC(name)
+#endif
+
+GLOBAL_VK_FUNC(vkEnumerateInstanceExtensionProperties)
+GLOBAL_VK_FUNC(vkCreateInstance)
+#undef GLOBAL_VK_FUNC
+
+#ifndef INSTANCE_VK_FUNC
+#define INSTANCE_VK_FUNC(name)
+#endif
+
+INSTANCE_VK_FUNC(vkEnumeratePhysicalDevices)
+INSTANCE_VK_FUNC(vkEnumerateDeviceExtensionProperties)
+INSTANCE_VK_FUNC(vkGetPhysicalDeviceQueueFamilyProperties)
+INSTANCE_VK_FUNC(vkGetPhysicalDeviceMemoryProperties)
+INSTANCE_VK_FUNC(vkCreateDevice)
+INSTANCE_VK_FUNC(vkGetDeviceProcAddr)
+INSTANCE_VK_FUNC(vkDestroyInstance)
+
+// VK_KHR_surface
+INSTANCE_VK_FUNC(vkGetPhysicalDeviceSurfaceSupportKHR)
+INSTANCE_VK_FUNC(vkGetPhysicalDeviceSurfaceCapabilitiesKHR)
+INSTANCE_VK_FUNC(vkGetPhysicalDeviceSurfaceFormatsKHR)
+INSTANCE_VK_FUNC(vkGetPhysicalDeviceSurfacePresentModesKHR)
+INSTANCE_VK_FUNC(vkDestroySurfaceKHR)
+
+// VK_KHR_xlib_surface
+INSTANCE_VK_FUNC(vkCreateXlibSurfaceKHR)
+#undef INSTANCE_VK_FUNC
+
+#ifndef DEVICE_VK_FUNC
+#define DEVICE_VK_FUNC(name)
+#endif
+
+DEVICE_VK_FUNC(vkGetDeviceQueue)
+DEVICE_VK_FUNC(vkDeviceWaitIdle)
+DEVICE_VK_FUNC(vkDestroyDevice)
+DEVICE_VK_FUNC(vkCreateBuffer)
+DEVICE_VK_FUNC(vkGetBufferMemoryRequirements)
+DEVICE_VK_FUNC(vkAllocateMemory)
+DEVICE_VK_FUNC(vkBindBufferMemory)
+DEVICE_VK_FUNC(vkCmdPipelineBarrier)
+DEVICE_VK_FUNC(vkCreateImage)
+DEVICE_VK_FUNC(vkGetImageMemoryRequirements)
+DEVICE_VK_FUNC(vkBindImageMemory)
+DEVICE_VK_FUNC(vkCreateImageView)
+DEVICE_VK_FUNC(vkMapMemory)
+DEVICE_VK_FUNC(vkUnmapMemory)
+DEVICE_VK_FUNC(vkCmdCopyBuffer)
+DEVICE_VK_FUNC(vkCmdCopyBufferToImage)
+DEVICE_VK_FUNC(vkBeginCommandBuffer)
+DEVICE_VK_FUNC(vkEndCommandBuffer)
+DEVICE_VK_FUNC(vkQueueSubmit)
+DEVICE_VK_FUNC(vkDestroyImageView)
+DEVICE_VK_FUNC(vkDestroyImage)
+DEVICE_VK_FUNC(vkDestroyBuffer)
+DEVICE_VK_FUNC(vkFreeMemory)
+DEVICE_VK_FUNC(vkCreateCommandPool)
+DEVICE_VK_FUNC(vkAllocateCommandBuffers)
+DEVICE_VK_FUNC(vkCreateSemaphore)
+DEVICE_VK_FUNC(vkCreateFence)
+DEVICE_VK_FUNC(vkWaitForFences)
+DEVICE_VK_FUNC(vkResetFences)
+DEVICE_VK_FUNC(vkDestroyFence)
+DEVICE_VK_FUNC(vkDestroySemaphore)
+DEVICE_VK_FUNC(vkResetCommandPool)
+DEVICE_VK_FUNC(vkDestroyCommandPool)
+DEVICE_VK_FUNC(vkQueueWaitIdle)
+DEVICE_VK_FUNC(vkCreateSampler)
+DEVICE_VK_FUNC(vkCreateDescriptorSetLayout)
+DEVICE_VK_FUNC(vkCreateDescriptorPool)
+DEVICE_VK_FUNC(vkAllocateDescriptorSets)
+DEVICE_VK_FUNC(vkUpdateDescriptorSets)
+DEVICE_VK_FUNC(vkCmdBindDescriptorSets)
+DEVICE_VK_FUNC(vkDestroyDescriptorPool)
+DEVICE_VK_FUNC(vkDestroyDescriptorSetLayout)
+DEVICE_VK_FUNC(vkDestroySampler)
+DEVICE_VK_FUNC(vkCreateRenderPass)
+DEVICE_VK_FUNC(vkCreateFramebuffer)
+DEVICE_VK_FUNC(vkDestroyFramebuffer)
+DEVICE_VK_FUNC(vkDestroyRenderPass)
+DEVICE_VK_FUNC(vkCmdBeginRenderPass)
+DEVICE_VK_FUNC(vkCmdEndRenderPass)
+DEVICE_VK_FUNC(vkCreateGraphicsPipelines)
+DEVICE_VK_FUNC(vkDestroyPipeline)
+DEVICE_VK_FUNC(vkCreateShaderModule)
+DEVICE_VK_FUNC(vkDestroyShaderModule)
+DEVICE_VK_FUNC(vkCreatePipelineLayout)
+DEVICE_VK_FUNC(vkDestroyPipelineLayout)
+DEVICE_VK_FUNC(vkCmdBindPipeline)
+DEVICE_VK_FUNC(vkCmdSetViewport)
+DEVICE_VK_FUNC(vkCmdSetScissor)
+DEVICE_VK_FUNC(vkCmdDraw)
+DEVICE_VK_FUNC(vkCmdCopyImage)
+DEVICE_VK_FUNC(vkCmdPushConstants)
+DEVICE_VK_FUNC(vkCmdClearColorImage)
+
+// VK_KHR_swapchain
+DEVICE_VK_FUNC(vkCreateSwapchainKHR)
+DEVICE_VK_FUNC(vkGetSwapchainImagesKHR)
+DEVICE_VK_FUNC(vkAcquireNextImageKHR)
+DEVICE_VK_FUNC(vkQueuePresentKHR)
+DEVICE_VK_FUNC(vkDestroySwapchainKHR)
+#undef DEVICE_VK_FUNC

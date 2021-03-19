@@ -9,7 +9,7 @@ This project is in development and highly subject to change.
 Requirements
 ------------
 In order to build st you need the Xlib header files,
-vulkan drivers + headers, and glslang.
+vulkan headers, and glslang.
 
 Installation
 ------------
@@ -30,6 +30,7 @@ the st terminfo entry with the following command:
     tic -sx st.info
 
 See the man page for additional details.
+In addition, vulkan drivers are required.
 
 TODO
 ----

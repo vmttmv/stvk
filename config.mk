@@ -14,11 +14,9 @@ PKG_CONFIG = pkg-config
 
 # includes and libs
 INCS = -I$(X11INC) \
-       `$(PKG_CONFIG) --cflags vulkan` \
        `$(PKG_CONFIG) --cflags fontconfig` \
        `$(PKG_CONFIG) --cflags freetype2`
-LIBS = -L$(X11LIB) -lm -lrt -lX11 -lutil \
-       `$(PKG_CONFIG) --libs vulkan` \
+LIBS = -L$(X11LIB) -lm -lrt -lX11 -lutil -ldl \
        `$(PKG_CONFIG) --libs fontconfig` \
        `$(PKG_CONFIG) --libs freetype2`
 

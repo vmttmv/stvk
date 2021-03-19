@@ -1,28 +1,35 @@
+#define VK_NO_PROTOTYPES
 #define VK_USE_PLATFORM_XLIB_KHR
 #include <vulkan/vulkan.h>
+#include <dlfcn.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include "vk.h"
+
+#define EXPORTED_VK_FUNC(name)          static PFN_##name name;
+#define GLOBAL_VK_FUNC(name)            static PFN_##name name;
+#define INSTANCE_VK_FUNC(name)          static PFN_##name name;
+#define DEVICE_VK_FUNC(name)            static PFN_##name name;
+
+#include "vkfuncs.h"
 
 /* For xmalloc, xrealloc */
 #include "st.h"
 
-#define ATLASSIZ        (1024)
-#define ATLASPAD        (1)
+#define ATLASSIZ                        (1024)
+#define ATLASPAD                        (1)
 
-#define APPNAME         "stvk"
-#define APPVER          VK_MAKE_VERSION(0, 1, 0)
-#define APIVER          VK_MAKE_VERSION(1, 0, 0)
+#define APPNAME                         "stvk"
+#define APPVER                          VK_MAKE_VERSION(0, 1, 0)
+#define APIVER                          VK_MAKE_VERSION(1, 0, 0)
 
-#define SSBUFSIZ        (1024*1024*2)
-#define STGBUFSIZ       (SSBUFSIZ + ATLASSIZ*ATLASSIZ)
+#define SSBUFSIZ                        (1024*1024*2)
+#define STGBUFSIZ                       (SSBUFSIZ + ATLASSIZ*ATLASSIZ)
 
-#define makerect(x, y, w, h) (Rect){(x), (y), (w), (h)}
-#define makearr(s, n)   (s) = xmalloc((n)*sizeof(*(s)))
-#define makequad(x, y, uv, fg, bg) \
-        (VKQUAD){(x), (y), (uv), (fg), (bg)}
+#define makerect(x, y, w, h)            (Rect){(x), (y), (w), (h)}
+#define makearr(s, n)                   (s) = xmalloc((n)*sizeof(*(s)))
+#define makequad(x, y, uv, fg, bg)      (VKQUAD){(x), (y), (uv), (fg), (bg)}
 
 static const char *instext[] = { VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_XLIB_SURFACE_EXTENSION_NAME };
 static const char *devext[] = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
@@ -82,6 +89,7 @@ typedef struct {
 } VKIMG;
 
 typedef struct {
+        void *lib;
         VkInstance instance;
         VkSurfaceKHR surface;
         VkPhysicalDevice pdev;
@@ -123,6 +131,11 @@ static VKBUF stgbuf;
 static VKATLAS fontatlas = { .x = ATLASPAD, .y = ATLASPAD };
 static VKARR quadarr;
 
+static int load_exported_vk_func(void);
+static int load_global_vk_funcs(void);
+static int load_instance_vk_funcs(void);
+static int load_device_vk_funcs(void);
+
 static inline void addrect(Rect *, Rect);
 static int initswapchain(VKSC *, uint32_t, uint32_t);
 static void freeswapchain(VKSC *);
@@ -140,6 +153,62 @@ static void imgbarrier(VkImage, VkAccessFlags, VkAccessFlags, VkImageLayout, VkI
 static void bufbarrier(VkBuffer, VkDeviceSize,
                 VkAccessFlags, VkAccessFlags,
                 VkPipelineStageFlags, VkPipelineStageFlags);
+
+int
+load_exported_vk_func(void)
+{
+#define EXPORTED_VK_FUNC(name)                                          \
+        name = (PFN_##name)dlsym(ctx.lib, #name);                       \
+        if (!name) {                                                    \
+                fprintf(stderr, "failed to load vk proc: " #name "\n"); \
+                return 1;                                               \
+        }
+#include "vkfuncs.h"
+
+    return 0;
+}
+
+int
+load_global_vk_funcs(void)
+{
+#define GLOBAL_VK_FUNC(name)                                            \
+        name = (PFN_##name)vkGetInstanceProcAddr(NULL, #name);          \
+                if (!name) {                                            \
+                fprintf(stderr, "failed to load vk proc: " #name "\n"); \
+                return 1;                                               \
+        }
+#include "vkfuncs.h"
+
+    return 0;
+}
+
+int
+load_instance_vk_funcs(void)
+{
+#define INSTANCE_VK_FUNC(name)                                          \
+    name = (PFN_##name)vkGetInstanceProcAddr(ctx.instance, #name);      \
+    if (!name) {                                                        \
+            fprintf(stderr, "failed to load vk proc: " #name "\n");     \
+            return 1;                                                   \
+    }
+#include "vkfuncs.h"
+
+    return 0;
+}
+
+int
+load_device_vk_funcs(void)
+{
+#define DEVICE_VK_FUNC(name)                                            \
+    name = (PFN_##name)vkGetDeviceProcAddr(ctx.dev, #name);             \
+    if (!name) {                                                        \
+            fprintf(stderr, "failed to load vk proc: " #name "\n");     \
+            return 1;                                                   \
+    }
+#include "vkfuncs.h"
+
+    return 0;
+}
 
 void
 addrect(Rect *a, Rect b)
@@ -749,6 +818,16 @@ blitatlas(uint16_t *x, uint16_t *y, uint16_t w, uint16_t h, uint16_t cw, uint16_
 int
 vkinit(Display *dpy, Window win, int w, int h)
 {
+        ctx.lib = dlopen("libvulkan.so.1", RTLD_NOW);
+        if (!ctx.lib) {
+                perror("dlopen");
+                return 1;
+        }
+        if (load_exported_vk_func())
+                return 1;
+        if (load_global_vk_funcs())
+                return 1;
+
         /* Create the instance */
         {
                 VkApplicationInfo appinfo = {0};
@@ -771,6 +850,9 @@ vkinit(Display *dpy, Window win, int w, int h)
                         return 1;
                 }
         }
+
+        if (load_instance_vk_funcs())
+                return 1;
 
         /* Create the surface, WSI */
         {
@@ -846,6 +928,9 @@ vkinit(Display *dpy, Window win, int w, int h)
                         return 1;
                 }
         }
+
+        if (load_device_vk_funcs())
+                return 1;
 
         /* Get the device queues */
         vkGetDeviceQueue(ctx.dev, ctx.qidx[0], 0, &ctx.gfxq);
@@ -982,12 +1067,12 @@ vkinit(Display *dpy, Window win, int w, int h)
         }
 
 
-        /* Semaphores */
+        /* Create the semaphores */
         {
                 VkSemaphoreCreateInfo info = {0};
                 info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-                if (vkCreateSemaphore(ctx.dev, &info, NULL, &ctx.acquire) ||
-                    vkCreateSemaphore(ctx.dev, &info, NULL, &ctx.release))
+                if (vkCreateSemaphore(ctx.dev, &info, NULL, &ctx.acquire) != VK_SUCCESS ||
+                    vkCreateSemaphore(ctx.dev, &info, NULL, &ctx.release) != VK_SUCCESS)
                         return 1;
         }
 
@@ -1017,6 +1102,7 @@ vkfree(void)
         vkDestroyDevice(ctx.dev, NULL);
         vkDestroySurfaceKHR(ctx.instance, ctx.surface, NULL);
         vkDestroyInstance(ctx.instance, NULL);
+        dlclose(ctx.lib);
 }
 
 int
