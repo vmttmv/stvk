@@ -282,7 +282,6 @@ initswapchain(VKSC *sc, uint32_t w, uint32_t h)
                 info.imageExtent.width = sc->w;
                 info.imageExtent.height = sc->h;
                 info.imageArrayLayers = 1;
-                info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
                 info.preTransform = caps.currentTransform;
                 info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
                 info.presentMode = mode;
