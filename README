@@ -35,6 +35,7 @@ In addition, vulkan drivers are required.
 TODO
 ----
 
+- Cleanup of the gpu buffer data format, and the blit func.
 - Fallback font mechanism.
 - Swapchain/render target resize mechanism needs to be revised and built robust.
 - Resizeable glyph atlas and SSBO.
