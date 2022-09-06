@@ -136,6 +136,7 @@ typedef struct {
         int badweight;
         FcPattern *pattern;
         FcPattern *match;
+        FcFontSet *set;
         FT_Face face;
 
         /* Glyph cache */
@@ -243,9 +244,8 @@ enum {
 };
 
 typedef struct {
-        //XftFont font;
+        Font font;
         int flags;
-        Rune unicodep;
 } Fontcache;
 
 /* Fontcache is an array now. A new font will be appended to the array. */
@@ -960,6 +960,7 @@ xloadfont(Font *f, FcPattern *pattern)
 
         metrics = f->face->size->metrics;
         f->pattern = configured;
+        f->set = NULL;
         f->ascent = metrics.ascender >> 6;
         f->descent = metrics.descender >> 6;
         f->height = f->ascent - f->descent;
@@ -1050,10 +1051,8 @@ void
 xunloadfonts(void)
 {
         /* Free the loaded fonts in the font cache.  */
-        /*
-           while (frclen > 0)
-           XftFontClose(xw.dpy, frc[--frclen].font);
-           */
+        while (frclen > 0)
+                xunloadfont(&frc[--frclen].font);
 
         xunloadfont(&dc.font);
         xunloadfont(&dc.bfont);
@@ -1321,11 +1320,16 @@ void
 xdrawglyphs(Glyph *glyphs, int len, int x, int y)
 {
         Font *font = &dc.font;
-        int i;
+        int i, j;
+        int frcflags = FRC_NORMAL;
         Glyph *g;
         GlyphSpec *spec;
         uint16_t xp, yp, runewidth;
         Color fg, bg, tmp;
+        FcResult fcres;
+        FcPattern *fcpattern, *fontpattern;
+        FcFontSet *fcsets[] = { NULL };
+        FcCharSet *fccharset;
 
         xp = (uint16_t)(x*win.cw + borderpx);
         yp = (uint16_t)(y*win.ch + borderpx);
@@ -1336,14 +1340,18 @@ xdrawglyphs(Glyph *glyphs, int len, int x, int y)
 
                 runewidth = win.cw * ((g->mode & ATTR_WIDE) ? 2 : 1);
 
-                if ((g->mode & ATTR_ITALIC) && (g->mode & ATTR_BOLD))
+                if ((g->mode & ATTR_ITALIC) && (g->mode & ATTR_BOLD)) {
                         font = &dc.ibfont;
-                else if (g->mode & ATTR_ITALIC)
+                        frcflags = FRC_ITALICBOLD;
+                } else if (g->mode & ATTR_ITALIC) {
                         font = &dc.ifont;
-                else if (g->mode & ATTR_BOLD)
+                        frcflags = FRC_ITALIC;
+                } else if (g->mode & ATTR_BOLD) {
                         font = &dc.bfont;
-                else
+                        frcflags = FRC_BOLD;
+                } else {
                         font = &dc.font;
+                }
 
                 if (g->mode & ATTR_ITALIC && g->mode & ATTR_BOLD) {
                         if (dc.ibfont.badslant || dc.ibfont.badweight)
@@ -1409,11 +1417,67 @@ xdrawglyphs(Glyph *glyphs, int len, int x, int y)
                         fg = bg;
 
                 spec = getglyphspec(font, g->u);
-                if (spec)
-                        vkpushquad(xp + spec->offx, yp - spec->offy, spec->w, spec->h,
-                                        spec->uvx, spec->uvy, fg, bg);
-                else
-                        vkpushquad(xp, yp, win.cw, win.ch, NOUV, NOUV, fg, bg);
+                if (spec) {
+                        vkpushquad(xp + spec->offx, yp - spec->offy,
+                                   spec->w, spec->h,
+                                   spec->uvx, spec->uvy, fg, bg);
+                } else {
+                        /* Look up the cache */
+                        for (j = 0; j < frclen; j++) {
+                                if (frc[j].flags == frcflags) {
+                                        spec = getglyphspec(&frc[j].font, g->u);
+                                        if (spec) {
+                                                font = &frc[j].font;
+                                                break;
+                                        }
+                                }
+                        }
+                        if (spec) {
+                                vkpushquad(xp + spec->offx, yp - spec->offy,
+                                           spec->w, spec->h,
+                                           spec->uvx, spec->uvy, fg, bg);
+                        } else {
+                                if (!font->set)
+                                        font->set = FcFontSort(0, font->pattern,
+                                                               1, 0, &fcres);
+                                fcsets[0] = font->set;
+
+                                fcpattern = FcPatternDuplicate(font->pattern);
+                                fccharset = FcCharSetCreate();
+
+                                FcCharSetAddChar(fccharset, g->u);
+                                FcPatternAddCharSet(fcpattern, FC_CHARSET,
+                                                fccharset);
+                                FcPatternAddBool(fcpattern, FC_SCALABLE, 1);
+
+                                FcConfigSubstitute(0, fcpattern,
+                                                FcMatchPattern);
+                                FcDefaultSubstitute(fcpattern);
+
+                                fontpattern = FcFontSetMatch(0, fcsets, 1,
+                                                fcpattern, &fcres);
+                                if (frclen >= frccap) {
+                                        frccap += 16;
+                                        frc = xrealloc(frc, frccap * sizeof(Fontcache));
+                                }
+                                font = &frc[frclen].font;
+                                memset(font, 0, sizeof *font);
+                                if (xloadfont(font, fontpattern))
+                                        die("Failed to load fallback font");
+                                frc[frclen].flags = frcflags;
+                                frclen++;
+                                spec = getglyphspec(font, g->u);
+                                if (spec)
+                                        vkpushquad(xp + spec->offx, yp - spec->offy,
+                                                   spec->w, spec->h,
+                                                   spec->uvx, spec->uvy, fg, bg);
+                                else
+                                        vkpushquad(xp, yp, win.cw, win.ch, NOUV, NOUV, fg, bg);
+
+                                FcPatternDestroy(fcpattern);
+                                FcCharSetDestroy(fccharset);
+                        }
+                }
 
                 /* TODO: Change to the original st-style, in which the modes are lumped together,
                  * so that drawing underline and strikethrough is more efficient */
