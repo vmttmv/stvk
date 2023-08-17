@@ -8,7 +8,7 @@ SRC = st.c x.c vk.c
 OBJ = shader.o $(SRC:.c=.o)
 GLSLCC = glslangValidator
 
-all: options shader st
+all: options st
 
 shader:
 	`$(GLSLCC) -V -S vert -DVERTEX_SHADER -o vs.spv prog.glsl &>/dev/null && \
