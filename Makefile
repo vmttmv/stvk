@@ -29,7 +29,7 @@ config.h:
 st.o: config.h st.h win.h
 x.o: arg.h config.h st.h win.h
 
-shader.o:
+shader.o: shader
 	$(CC) -c shader.S -o shader.o
 
 $(OBJ): config.h config.mk
@@ -48,7 +48,7 @@ dist: clean
 	tar -cf - st-$(VERSION) | gzip > st-$(VERSION).tar.gz
 	rm -rf st-$(VERSION)
 
-install: shader st
+install: st
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
 	cp -f st $(DESTDIR)$(PREFIX)/bin
 	chmod 755 $(DESTDIR)$(PREFIX)/bin/st
